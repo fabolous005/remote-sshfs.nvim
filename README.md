@@ -9,7 +9,7 @@ Explore, edit, and develop on a remote machine via SSHFS with Neovim. `remote-ss
 
 ## ✨ Features
 
-- !!! No telescope dependecy !!!
+- **!!! No telescope dependecy !!!**
 - 📡 **Seamless remote connection** via SSHFS and a select menu using `:RemoteSSHFSConnect` or keybind
 - 💾 **Automatic mount management** to mount/unmount automatically with the lifecycle of Neovim
 - ⚡ **Live-grep and find-files remote performance** via running underlying binaries on the server and piping the result via SSH
