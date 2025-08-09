@@ -4,7 +4,12 @@ local M = {}
 
 -- Allow connection to be called via api
 M.connect = function(opts)
-  require("telescope").extensions["remote-sshfs"].connect(opts)
+  if opts.args and opts.args ~= "" then
+    local host = require("remote-sshfs.utils").parse_host_from_command(opts.args)
+    require("remote-sshfs.connections").connect(host)
+  else
+    require("remote-sshfs.selector").hosts()
+  end
 end
 
 -- Allow disconnection to be called via api
@@ -14,7 +19,11 @@ end
 
 -- Allow config edit to be called via api
 M.edit = function(opts)
-  require("telescope").extensions["remote-sshfs"].edit(opts)
+  if opts.args and opts.args ~= "" then
+    vim.cmd.split(opts.args)
+  else
+    require("remote-sshfs.selector").ssh_configs()
+  end
 end
 
 -- Allow configuration reload to be called via api

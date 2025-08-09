@@ -35,6 +35,14 @@ M.list_hosts = function()
   return hosts
 end
 
+M.list_single_hosts = function()
+  local single_hosts = {}
+  for k in pairs(hosts) do
+    table.insert(single_hosts, k)
+  end
+  return single_hosts
+end
+
 M.list_ssh_configs = function()
   return ssh_configs
 end
@@ -253,7 +261,7 @@ M.unmount_host = function()
     mount_point = nil
     current_host = nil
     -- Clear Telescope extension cache for remote-find commands
-    pcall(require, "telescope._extensions.remote-sshfs").clear_cache()
+    -- pcall(require, "telescope._extensions.remote-sshfs").clear_cache()
   end
 end
 

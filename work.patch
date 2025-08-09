@@ -1,0 +1,115 @@
+diff --git a/lua/remote-sshfs/api.lua b/lua/remote-sshfs/api.lua
+index 0d7ad32..f16ff30 100644
+--- a/lua/remote-sshfs/api.lua
++++ b/lua/remote-sshfs/api.lua
+@@ -4,7 +4,12 @@ local M = {}
+ 
+ -- Allow connection to be called via api
+ M.connect = function(opts)
+-  require("telescope").extensions["remote-sshfs"].connect(opts)
++  if opts.args and opts.args ~= "" then
++    local host = require("remote-sshfs.utils").parse_host_from_command(opts.args)
++    require("remote-sshfs.connections").connect(host)
++  else
++    require("remote-sshfs.selector").hosts()
++  end
+ end
+ 
+ -- Allow disconnection to be called via api
+@@ -14,7 +19,11 @@ end
+ 
+ -- Allow config edit to be called via api
+ M.edit = function(opts)
+-  require("telescope").extensions["remote-sshfs"].edit(opts)
++  if opts.args and opts.args ~= "" then
++    vim.cmd.split(opts.args)
++  else
++    require("remote-sshfs.selector").ssh_configs()
++  end
+ end
+ 
+ -- Allow configuration reload to be called via api
+diff --git a/lua/remote-sshfs/connections.lua b/lua/remote-sshfs/connections.lua
+index 6476e99..10021f8 100644
+--- a/lua/remote-sshfs/connections.lua
++++ b/lua/remote-sshfs/connections.lua
+@@ -35,6 +35,14 @@ M.list_hosts = function()
+   return hosts
+ end
+ 
++M.list_single_hosts = function()
++  local single_hosts = {}
++  for k in pairs(hosts) do
++    table.insert(single_hosts, k)
++  end
++  return single_hosts
++end
++
+ M.list_ssh_configs = function()
+   return ssh_configs
+ end
+@@ -253,7 +261,7 @@ M.unmount_host = function()
+     mount_point = nil
+     current_host = nil
+     -- Clear Telescope extension cache for remote-find commands
+-    pcall(require, "telescope._extensions.remote-sshfs").clear_cache()
++    -- pcall(require, "telescope._extensions.remote-sshfs").clear_cache()
+   end
+ end
+ 
+diff --git a/lua/remote-sshfs/init.lua b/lua/remote-sshfs/init.lua
+index 541f7d5..76015c1 100644
+--- a/lua/remote-sshfs/init.lua
++++ b/lua/remote-sshfs/init.lua
+@@ -56,12 +56,7 @@ M.callback = {
+ M.setup_commands = function()
+   -- Create commands to connect/edit/reload/disconnect/find_files/live_grep
+   vim.api.nvim_create_user_command("RemoteSSHFSConnect", function(opts)
+-    if opts.args and opts.args ~= "" then
+-      local host = require("remote-sshfs.utils").parse_host_from_command(opts.args)
+-      require("remote-sshfs.connections").connect(host)
+-    else
+-      require("telescope").extensions["remote-sshfs"].connect()
+-    end
++    require("remote-sshfs.api").connect(opts)
+   end, {
+     nargs = "?",
+     desc = "Remotely connect to host via picker or command as argument.",
+@@ -69,21 +64,28 @@ M.setup_commands = function()
+       return vim.tbl_keys(require("remote-sshfs.connections").list_hosts())
+     end,
+   })
+-  vim.api.nvim_create_user_command("RemoteSSHFSEdit", function()
+-    require("telescope").extensions["remote-sshfs"].edit()
+-  end, {})
+   vim.api.nvim_create_user_command("RemoteSSHFSReload", function()
+     require("remote-sshfs.connections").reload()
+   end, {})
+   vim.api.nvim_create_user_command("RemoteSSHFSDisconnect", function()
+     require("remote-sshfs.connections").unmount_host()
+   end, {})
+-  vim.api.nvim_create_user_command("RemoteSSHFSFindFiles", function()
+-    require("telescope").extensions["remote-sshfs"].find_files {}
+-  end, {})
+-  vim.api.nvim_create_user_command("RemoteSSHFSLiveGrep", function()
+-    require("telescope").extensions["remote-sshfs"].live_grep {}
+-  end, {})
++  vim.api.nvim_create_user_command("RemoteSSHFSEdit", function(opts)
++    require("remote-sshfs.api").edit(opts)
++  end, {
++    nargs = "?",
++    desc = "Edit ssh config file via picker or as argument",
++    complete = function()
++      return vim.tbl_keys(require("remote-sshfs.connections").list_ssh_configs())
++    end
++  })
++  -- TODO: these should be replaced
++  -- vim.api.nvim_create_user_command("RemoteSSHFSFindFiles", function()
++  --   require("telescope").extensions["remote-sshfs"].find_files {}
++  -- end, {})
++  -- vim.api.nvim_create_user_command("RemoteSSHFSLiveGrep", function()
++  --   require("telescope").extensions["remote-sshfs"].live_grep {}
++  -- end, {})
+ end
+ 
+ M.setup = function(config)
