@@ -9,6 +9,7 @@ Explore, edit, and develop on a remote machine via SSHFS with Neovim. `remote-ss
 
 ## ✨ Features
 
+- !!! No telescope dependecy !!!
 - 📡 **Seamless remote connection** via SSHFS and a select menu using `:RemoteSSHFSConnect` or keybind
 - 💾 **Automatic mount management** to mount/unmount automatically with the lifecycle of Neovim
 - ⚡ **Live-grep and find-files remote performance** via running underlying binaries on the server and piping the result via SSH
@@ -18,8 +19,6 @@ Explore, edit, and develop on a remote machine via SSHFS with Neovim. `remote-ss
 ### Neovim
 
 - Neovim >= 0.7.0 **(latest version recommended)**
-- [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim): live grep, find files, and host selector/editor functionality
-- [plenary.nvim](https://github.com/nvim-lua/plenary.nvim): lua function library
 
 ### Local Machine
 
@@ -41,7 +40,6 @@ Install using your favorite package manager
 // Using lazy.nvim
 return {
   "nosduco/remote-sshfs.nvim",
-  dependencies = { "nvim-telescope/telescope.nvim", "nvim-lua/plenary.nvim" },
   opts = {
     -- Refer to the configuration section below
     -- or leave empty for defaults
@@ -49,11 +47,6 @@ return {
 }
 ```
 
-Load the extension with telescope
-
-```lua
-require('telescope').load_extension 'remote-sshfs'
-```
 
 *Try the command `:RemoteSSHFSConnect`
   to see if `remote-sshfs.nvim` is installed and configured corrected*
@@ -125,10 +118,6 @@ require('remote-sshfs').setup{
 
 **`:RemoteSSHFSEdit`**: Use this command to open the ssh config picker to open and edit ssh configs
 
-**`:RemoteSSHFSFindFiles`**: Use this command to initiate a telescope find files window which operates completely remotely via SSH and will open buffers referencing to your local mount.
-
-**`:RemoteSSHFSLiveGrep`**: Use this command to initiate a telescope live grep window which operates completely remotely via SSH and will open buffers referencing to your local mount.
-
 ### Keybinds
 
 For conveninece, it is recommended to setup keymappings for these commands.
@@ -140,24 +129,6 @@ local api = require('remote-sshfs.api')
 vim.keymap.set('n', '<leader>rc', api.connect, {})
 vim.keymap.set('n', '<leader>rd', api.disconnect, {})
 vim.keymap.set('n', '<leader>re', api.edit, {})
-
--- (optional) Override telescope find_files and live_grep to make dynamic based on if connected to host
-local builtin = require("telescope.builtin")
-local connections = require("remote-sshfs.connections")
-vim.keymap.set("n", "<leader>ff", function()
- if connections.is_connected() then
-  api.find_files()
- else
-  builtin.find_files()
- end
-end, {})
-vim.keymap.set("n", "<leader>fg", function()
- if connections.is_connected() then
-  api.live_grep()
- else
-  builtin.live_grep()
- end
-end, {})
 ```
 
 ### Use Cases
@@ -167,8 +138,6 @@ With this plugin you can:
 - Connect and mount a remote host via SSHFS using the `:RemoteSSHFSConnect` command. This command will trigger a picker to appear where you can select hosts that have been parsed from your SSH config files. Upon selecting a host, remote-sshfs will mount the host (by default at `~/.sshfs/<hostname>`) and change the current working directory to that folder. Additionally, by default, once vim closes the mount will be automatically unmounted and cleaned.
 - Disconnect from a remote host that you're current connected to using the `:RemoteSSHFSDisconnect` command
 - Select a SSH config to edit via a picker by using the `:RemoteSSHFSEdit` command
-- Utilize Telescope Find Files functionality completely remote via SSH by using the `:RemoteSSHFSFindFiles` command (<strong>Note: the remote server must have either [ripgrep](https://github.com/BurntSushi/ripgrep), [fd/fdfind](https://github.com/sharkdp/fd), or the where command</strong>)
-- Utilize Telescope Live Grep functionality completely remote via SSH by using the `:RemoteSSHFSLiveGrep` command (<strong>Note: the remote server must have [ripgrep](https://github.com/BurntSushi/ripgrep) installed</strong>)
 
 To learn more about SSH configs and how to write/style one you can read more [here](https://linuxize.com/post/using-the-ssh-config-file/)
 
