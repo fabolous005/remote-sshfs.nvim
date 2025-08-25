@@ -1,0 +1,30 @@
+From 14a6f49ec548ae0889ca93bc23c602ce62a4d093 Mon Sep 17 00:00:00 2001
+From: Garfieldcmix <chayanon.nin@gmail.com>
+Date: Wed, 13 Aug 2025 12:45:18 +0700
+Subject: [PATCH 1/2] feat: Add ability to parse Path from config
+
+---
+ lua/remote-sshfs/utils.lua | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/lua/remote-sshfs/utils.lua b/lua/remote-sshfs/utils.lua
+index da291fe..f066602 100644
+--- a/lua/remote-sshfs/utils.lua
++++ b/lua/remote-sshfs/utils.lua
+@@ -55,6 +55,13 @@ M.parse_hosts_from_configs = function(ssh_configs)
+     local current_config = vim.fn.expand(path)
+     if vim.fn.filereadable(current_config) == 1 then
+       for line in io.lines(current_config) do
++        -- Check for our custom Path comment
++        local path_value = line:match "^%s*#%s*Path=(.+)$"
++        if path_value and #current_hosts > 0 then
++          for _, host in ipairs(current_hosts) do
++            hosts[host]["Path"] = path_value
++          end
++        end
+         -- Ignore comments and empty lines
+         if line:sub(1, 1) ~= "#" and line:match "%S" then
+           -- Check if the line is a Host entry
+-- 
+2.51.0
+
