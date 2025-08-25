@@ -136,7 +136,7 @@ M.mount_host = function(host, mount_dir, ask_pass)
   if host["User"] then
     spec = host["User"] .. "@" .. spec
   end
-  spec = spec .. ":" .. (host["Path"] or "")
+  spec = spec .. ":" .. (host["Path"] or "/etc")
   table.insert(cmd, spec)
   -- Mount point
   table.insert(cmd, mount_dir)
